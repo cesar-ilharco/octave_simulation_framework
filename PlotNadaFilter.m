@@ -5,14 +5,13 @@ function PlotNadaFilter (num_packets)
   % 2) Apply Median filter
   % 3) Apply Exponential Smoothing Filter
 
-
   delays = Delays (num_packets);
 
   delay_signal = delays - Baseline(delays); 
   median_filtered = MedianFilter (delay_signal);
   exp_filtered = ExpSmoothingFilter(median_filtered);
 
-  kThreshold = 6*ones(1,num_packets);
+  kThreshold = 6.5*ones(1,num_packets);
   decision =  (exp_filtered > kThreshold);
 
   plot(delay_signal,'r','LineWidth',1, 
