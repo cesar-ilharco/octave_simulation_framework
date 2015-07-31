@@ -1,3 +1,4 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function median_filtered = MedianFilter (array)
 	
   kMedian = 5;
@@ -11,3 +12,4 @@ function median_filtered = MedianFilter (array)
   endfor
 
 endfunction
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

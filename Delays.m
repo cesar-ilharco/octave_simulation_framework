@@ -1,11 +1,7 @@
-function delays = Delays (num_packets)
+function delays = Delays (num_packets, payload_bytes, target_kbps, capacity_kbps)
 
-    kCapacityKbps = 1000;
-    kTargetBitrateKbps = 800;
-    kPacketSizeBytes = 1200;
-  
-	creation_packets = CreationTimes (num_packets, kTargetBitrateKbps, kPacketSizeBytes);
-	arrival_packets = ArrivalTimes (creation_packets, kCapacityKbps);
-	delays = arrival_packets(1,:) - creation_packets(1,:);
+	created_packets = CreatePackets (num_packets, payload_bytes, target_kbps, 0, 0);
+	arrival_packets = ArrivalPackets (created_packets, capacity_kbps);
+	delays = arrival_packets(1,:) - created_packets(1,:);
 	
 endfunction

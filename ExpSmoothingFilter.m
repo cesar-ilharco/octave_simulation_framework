@@ -1,3 +1,4 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function exp_filtered = ExpSmoothingFilter (array)
 	
   kAlpha = 0.9;
@@ -10,3 +11,4 @@ function exp_filtered = ExpSmoothingFilter (array)
   endfor
 
 endfunction
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
