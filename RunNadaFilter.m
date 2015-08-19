@@ -19,8 +19,8 @@ function RunNadaFilter (num_packets)
   % now, congestion_signal.
   feedbacks_ = [0; 0];   
   baseline_delay_ms_ = 10000;  % Upper bound.
-  % bitrate, delay_signal, median_filtered, exp_smoothed, est_queuing_delay, loss_ratio, congestion_signal.
-  plot_values = [0; 0; 0; 0; 0; 0; 0];
+  % bitrate, delay_signal, median_filtered, exp_smoothed, est_queuing_delay, loss_ratio, congestion_signal, time_ms.
+  plot_values = [0; 0; 0; 0; 0; 0; 0; 0];
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   for packet_id=1:num_packets
@@ -87,7 +87,7 @@ function RunNadaFilter (num_packets)
         feedbacks_ = [feedbacks_ feedback];
       endif
 
-      plot_value = [bitrate_kbps_; delay_signal; median_filtered; exp_smoothed; est_queuing_delay_ms; loss_ratio; congestion_signal_ms];
+      plot_value = [bitrate_kbps_; delay_signal; median_filtered; exp_smoothed; est_queuing_delay_ms; loss_ratio; congestion_signal_ms; now_receiver_ms_];
       plot_values = [plot_values plot_value];
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     endif
@@ -96,20 +96,41 @@ function RunNadaFilter (num_packets)
 
   %%%%%%%% PLOT BITRATE %%%%%%%%
   figure(1);
-  plot (plot_values(1,:), 'b', 'LineWidth',4,
-        kCapacityKbps*ones(1,num_packets), 'linestyle', '--', 'k', 'LineWidth',2);
+  plot (plot_values(8,:)./1000, plot_values(1,:), 'b', 'LineWidth', 4,
+        0:0.1:plot_values(8,end)/1000, kCapacityKbps, 'linestyle', '--', 'k', 'LineWidth', 2);
 
+  title('Sending estimate', 'fontsize', 16);
+  xlabel('Time (s)', 'fontsize', 14);
+  ylabel('Bitrate(kbps)', 'fontsize', 14);
+  legend1 = legend ('Sending estimate', 'Link capacity');
+  set (legend1, 'fontsize', 14);
+
+  %%%%%%%% PLOT signals on the same window %%%%%%%%
   %%%%%%%% PLOT delay_signal, median_filtered, exp_smoothed. %%%%%%%%
   figure(2);
+  subplot (2, 1, 1);
+
   plot(plot_values(2,:),'r','LineWidth',1, 
-       plot_values(3,:), 'linestyle', ':','k', 'LineWidth', 4, 
-       plot_values(4,:),'k', 'LineWidth', 4);
+        plot_values(3,:), 'linestyle', ':','k', 'LineWidth', 4, 
+        plot_values(4,:),'k', 'LineWidth', 4);
+
+  title('Delay Signals', 'fontsize', 14);
+  xlabel('');
+  ylabel('time (ms)', 'fontsize', 12);
+  legend2 = legend ('Raw delay signal', 'Median filtered', 'Exp. smoothed');
+  set (legend2, 'fontsize', 12);
 
   %%%%%%%% PLOT est_queuing_delay, loss_signal and congestion_signal. %%%%%%%%
-  figure(3);
+  subplot (2, 1, 2);
   plot(plot_values(5,:),'b','LineWidth',2, 
        kPacketLossPenaltyMs * plot_values(6,:),'r', 'LineWidth',2,
        plot_values(7,:),'k', 'LineWidth',4);
+
+  title('Congestion Control Signals', 'fontsize', 14);
+  xlabel('');
+  ylabel('time (ms)', 'fontsize', 12);
+  legend3 = legend ('Est. queuing delay', 'Loss signal', 'Congestion signal');
+  set (legend3, 'fontsize', 12);
 
 endfunction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
