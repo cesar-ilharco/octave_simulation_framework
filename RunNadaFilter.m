@@ -2,17 +2,25 @@
 function RunNadaFilter (num_packets)
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Constants.
-  kCapacityKbps = 500;
   kPacketLossPenaltyMs = 1000;
   kPayloadSizeBytes = 1200;
-  kMinBitrateKbps = 150;
-  kMaxBitrateKbps = 1500;
+  kMinBitrateKbps = 50;
+  kMaxBitrateKbps = 2500;
   kFeedbackIntervalMs = 100;
   kQueuingDelayUpperBoundMs = 10;
   kDerivativeUpperBound = 10 / kFeedbackIntervalMs;
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Testbed parameters: evaluation test 5.1 available on:
+  % https://tools.ietf.org/html/draft-ietf-rmcat-eval-test-01#section-5.1
+  % Maps [ending_time(s) capacity(kbps)]
+  kCapacitiesKbps = [25 4000; 50 2000; 75 3500; 100 1000; 125 2000];
+  % Simulation can be shorten in order to obtain results more quickly.
+  % Convergence should take place before link capacity changes.
+  time_compression = 1;  % Optional.
+  kCapacitiesKbps (:,1) = kCapacitiesKbps (:,1)./time_compression;
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Members, initial value.
-  bitrate_kbps_ = 150;
+  bitrate_kbps_ = 300;
   now_sender_ms_ = 0;
   now_receiver_ms_ = 0;
   arrival_packets_ = [];
@@ -21,17 +29,26 @@ function RunNadaFilter (num_packets)
   baseline_delay_ms_ = 10000;  % Upper bound.
   % bitrate, delay_signal, median_filtered, exp_smoothed, est_queuing_delay, loss_ratio, congestion_signal, time_ms.
   plot_values = zeros(8, 1);
+  packet_id = 1;
+  capacity_piece = 1;  % Link capacity changes and has several constant pieces.
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  for packet_id=1:num_packets
+  while now_sender_ms_ < 1000 * kCapacitiesKbps(end,1);
   
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % SENDER SIDE: Generate packets one by one.
 
+    % Update capacity if necessary
+    while now_sender_ms_ > 1000 * kCapacitiesKbps(capacity_piece, 1)
+      capacity_piece = capacity_piece + 1;
+    endwhile
+
+    current_capacity_kbps = kCapacitiesKbps(capacity_piece, 2);
+
     new_packet = CreatePackets (1, kPayloadSizeBytes, bitrate_kbps_, packet_id-1, now_sender_ms_);
     now_sender_ms_ = new_packet(1,1);
 
-    arrival_packet = ArrivalPackets (new_packet, kCapacityKbps, now_receiver_ms_);
+    arrival_packet = ArrivalPackets (new_packet, current_capacity_kbps, now_receiver_ms_);
 
     % Packets can be lost.
     if (size(arrival_packet, 2) > 0)
@@ -92,12 +109,22 @@ function RunNadaFilter (num_packets)
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     endif
 
-  endfor
+    packet_id = packet_id + 1;
+
+  endwhile
 
   %%%%%%%% PLOT BITRATE %%%%%%%%
   figure(1);
+
+  plot_capacity_kbps = [0 kCapacitiesKbps(1, 2) ; kCapacitiesKbps(1,:)];
+  for i=2:size(kCapacitiesKbps , 1)
+      plot_capacity_kbps = [plot_capacity_kbps ; 
+                            kCapacitiesKbps(i-1, 1) kCapacitiesKbps(i, 2); 
+                            kCapacitiesKbps(i,:)];
+  endfor
+
   plot (plot_values(8,2:end)./1000, plot_values(1,2:end), 'b', 'LineWidth', 4,
-        0:0.1:plot_values(8,end)/1000, kCapacityKbps, 'linestyle', '--', 'k', 'LineWidth', 2);
+        plot_capacity_kbps(:,1), plot_capacity_kbps(:,2), 'linestyle', '--', 'k', 'LineWidth', 2);
 
   title('Sending estimate', 'fontsize', 16);
   xlabel('Time (s)', 'fontsize', 14);
