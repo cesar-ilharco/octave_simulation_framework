@@ -12,7 +12,7 @@ function RunNadaFilter (num_packets)
   kDerivativeUpperBound = 10 / kFeedbackIntervalMs;
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Members, initial value.
-  bitrate_kbps_ = 1000;
+  bitrate_kbps_ = 150;
   now_sender_ms_ = 0;
   now_receiver_ms_ = 0;
   arrival_packets_ = [];
@@ -20,7 +20,7 @@ function RunNadaFilter (num_packets)
   feedbacks_ = [0; 0];   
   baseline_delay_ms_ = 10000;  % Upper bound.
   % bitrate, delay_signal, median_filtered, exp_smoothed, est_queuing_delay, loss_ratio, congestion_signal, time_ms.
-  plot_values = [0; 0; 0; 0; 0; 0; 0; 0];
+  plot_values = zeros(8, 1);
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   for packet_id=1:num_packets
@@ -96,7 +96,7 @@ function RunNadaFilter (num_packets)
 
   %%%%%%%% PLOT BITRATE %%%%%%%%
   figure(1);
-  plot (plot_values(8,:)./1000, plot_values(1,:), 'b', 'LineWidth', 4,
+  plot (plot_values(8,2:end)./1000, plot_values(1,2:end), 'b', 'LineWidth', 4,
         0:0.1:plot_values(8,end)/1000, kCapacityKbps, 'linestyle', '--', 'k', 'LineWidth', 2);
 
   title('Sending estimate', 'fontsize', 16);
@@ -110,9 +110,9 @@ function RunNadaFilter (num_packets)
   figure(2);
   subplot (2, 1, 1);
 
-  plot(plot_values(8,:)./1000, plot_values(2,:), 'r','LineWidth',1, 
-        plot_values(8,:)./1000, plot_values(3,:), 'linestyle', ':','k', 'LineWidth', 4, 
-        plot_values(8,:)./1000, plot_values(4,:), 'k', 'LineWidth', 4);
+  plot(plot_values(8,2:end)./1000, plot_values(2,2:end), 'r','LineWidth',1, 
+        plot_values(8,2:end)./1000, plot_values(3,2:end), 'linestyle', ':','k', 'LineWidth', 4, 
+        plot_values(8,2:end)./1000, plot_values(4,2:end), 'k', 'LineWidth', 4);
 
   title('Delay Signals', 'fontsize', 14);
   xlabel('time (s)', 'fontsize', 12);
@@ -122,9 +122,9 @@ function RunNadaFilter (num_packets)
 
   %%%%%%%% PLOT est_queuing_delay, loss_signal and congestion_signal. %%%%%%%%
   subplot (2, 1, 2);
-  plot(plot_values(8,:)./1000, plot_values(5,:),'b','LineWidth',2, 
-       plot_values(8,:)./1000, kPacketLossPenaltyMs * plot_values(6,:),'r', 'LineWidth',2,
-       plot_values(8,:)./1000, plot_values(7,:),'k', 'LineWidth',4);
+  plot(plot_values(8,2:end)./1000, plot_values(5,2:end),'b','LineWidth',2, 
+       plot_values(8,2:end)./1000, kPacketLossPenaltyMs * plot_values(6,2:end),'r', 'LineWidth',2,
+       plot_values(8,2:end)./1000, plot_values(7,2:end),'k', 'LineWidth',4);
 
   title('Congestion Control Signals', 'fontsize', 14);
   xlabel('time (s)', 'fontsize', 12);
