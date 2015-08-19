@@ -110,25 +110,25 @@ function RunNadaFilter (num_packets)
   figure(2);
   subplot (2, 1, 1);
 
-  plot(plot_values(2,:),'r','LineWidth',1, 
-        plot_values(3,:), 'linestyle', ':','k', 'LineWidth', 4, 
-        plot_values(4,:),'k', 'LineWidth', 4);
+  plot(plot_values(8,:)./1000, plot_values(2,:), 'r','LineWidth',1, 
+        plot_values(8,:)./1000, plot_values(3,:), 'linestyle', ':','k', 'LineWidth', 4, 
+        plot_values(8,:)./1000, plot_values(4,:), 'k', 'LineWidth', 4);
 
   title('Delay Signals', 'fontsize', 14);
-  xlabel('');
-  ylabel('time (ms)', 'fontsize', 12);
+  xlabel('time (s)', 'fontsize', 12);
+  ylabel('signal (ms)', 'fontsize', 12);
   legend2 = legend ('Raw delay signal', 'Median filtered', 'Exp. smoothed');
   set (legend2, 'fontsize', 12);
 
   %%%%%%%% PLOT est_queuing_delay, loss_signal and congestion_signal. %%%%%%%%
   subplot (2, 1, 2);
-  plot(plot_values(5,:),'b','LineWidth',2, 
-       kPacketLossPenaltyMs * plot_values(6,:),'r', 'LineWidth',2,
-       plot_values(7,:),'k', 'LineWidth',4);
+  plot(plot_values(8,:)./1000, plot_values(5,:),'b','LineWidth',2, 
+       plot_values(8,:)./1000, kPacketLossPenaltyMs * plot_values(6,:),'r', 'LineWidth',2,
+       plot_values(8,:)./1000, plot_values(7,:),'k', 'LineWidth',4);
 
   title('Congestion Control Signals', 'fontsize', 14);
-  xlabel('');
-  ylabel('time (ms)', 'fontsize', 12);
+  xlabel('time (s)', 'fontsize', 12);
+  ylabel('signal (ms)', 'fontsize', 12);
   legend3 = legend ('Est. queuing delay', 'Loss signal', 'Congestion signal');
   set (legend3, 'fontsize', 12);
 
