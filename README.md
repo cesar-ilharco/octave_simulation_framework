@@ -1,5 +1,8 @@
 # octave_simulation_framework
 
+OBJECTIVES:
+The repository aims to provide an octave simulation framework that is easy to read, run and modify. Results visualization helps to get a better understanding on how congestion control algorithms GCC and NADA work. Furthermore, new filters and other algorithm modifications can be tested.
+
 ABOUT:
 This framework simulates:
 A sender that creates packets, with a pace determined by the sending bitrate and the packet size.
@@ -15,7 +18,9 @@ https://tools.ietf.org/html/draft-ietf-rmcat-nada-00
 (Work in progress)
 
 HOW TO USE:
-Call RunNadaFilter(num_packets) with the chosen number of packet.
+Calling RunNadaFilter() from Octave will simulate the evaluation test case 5.1, available on:
+https://tools.ietf.org/html/draft-ietf-rmcat-eval-test-01#section-5.1
+
 Adjust/tune parameters according to your needs.
 
 TODO:
