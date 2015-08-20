@@ -16,8 +16,11 @@ function RunNadaFilter (num_packets)
   kCapacitiesKbps = [25 4000; 50 2000; 75 3500; 100 1000; 125 2000];
   % Simulation can be shorten in order to obtain results more quickly.
   % Convergence should take place before link capacity changes.
-  time_compression = 5;  % Optional.
+  time_compression = 1;  % Optional.
   kCapacitiesKbps (:,1) = kCapacitiesKbps (:,1)./time_compression;
+  % Link capacity can be reduced to test a stressed scenario.
+  reducing_factor = 1;  % Optional.
+  kCapacitiesKbps (:,2) = kCapacitiesKbps (:,2)./reducing_factor;
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Members, initial value.
   bitrate_kbps_ = 300;
@@ -64,7 +67,7 @@ function RunNadaFilter (num_packets)
       delay = arrival_packet(1,1) - new_packet(1,1);
       baseline_delay_ms_ = min (baseline_delay_ms_, delay);
       delay_signal = delay - baseline_delay_ms_;
-      median_filtered = MedianFilter ([plot_values(2,max(1,end-4):end) delay_signal])(end);
+      median_filtered = MedianFilter ([plot_values(2,max(1,end-3):end) delay_signal])(end);
       exp_smoothed = ExpSmoothingFilter([plot_values(4,end) median_filtered])(2);
       est_queuing_delay_ms = NonLinearWarping(exp_smoothed);
 
