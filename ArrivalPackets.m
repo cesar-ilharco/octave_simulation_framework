@@ -9,7 +9,7 @@ function [arrival_packets new_send_time_ms] = ArrivalPackets (created_packets, c
   arrival_packets = AddSendTime(arrival_packets, capacity_kbps, last_send_time_ms);
   % Add jitter if at least one packet was not lost.
   if (size(arrival_packets, 2) > 0)
-  	 new_send_time_ms = arrival_packets(end, 1);
+  	 new_send_time_ms = arrival_packets(1, end);
      arrival_packets = AddJitter(arrival_packets, last_arrived_ms);
   endif
 
