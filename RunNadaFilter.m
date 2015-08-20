@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function RunNadaFilter (num_packets)
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Constants.
@@ -16,26 +16,28 @@ function RunNadaFilter (num_packets)
   kCapacitiesKbps = [25 4000; 50 2000; 75 3500; 100 1000; 125 2000];
   % Simulation can be shorten in order to obtain results more quickly.
   % Convergence should take place before link capacity changes.
-  time_compression = 1;  % Optional.
+  time_compression = 5;  % Optional.
   kCapacitiesKbps (:,1) = kCapacitiesKbps (:,1)./time_compression;
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Members, initial value.
   bitrate_kbps_ = 300;
   now_sender_ms_ = 0;
   now_receiver_ms_ = 0;
+  last_send_time_ms_ = 0;
   arrival_packets_ = [];
   % now, congestion_signal.
   feedbacks_ = [0; 0];   
   baseline_delay_ms_ = 10000;  % Upper bound.
-  % bitrate, delay_signal, median_filtered, exp_smoothed, est_queuing_delay, loss_ratio, congestion_signal, time_ms.
+  % bitrate, delay_signal, median_filtered, exp_smoothed,
+  % est_queuing_delay, loss_ratio, congestion_signal, time_ms.
   plot_values = zeros(8, 1);
   packet_id = 1;
   capacity_piece = 1;  % Link capacity changes and has several constant pieces.
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   while now_sender_ms_ < 1000 * kCapacitiesKbps(end,1);
   
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % SENDER SIDE: Generate packets one by one.
 
     % Update capacity if necessary
@@ -45,10 +47,12 @@ function RunNadaFilter (num_packets)
 
     current_capacity_kbps = kCapacitiesKbps(capacity_piece, 2);
 
-    new_packet = CreatePackets (1, kPayloadSizeBytes, bitrate_kbps_, packet_id-1, now_sender_ms_);
+    new_packet = CreatePackets (
+                 1, kPayloadSizeBytes, bitrate_kbps_, packet_id-1, now_sender_ms_);
     now_sender_ms_ = new_packet(1,1);
 
-    arrival_packet = ArrivalPackets (new_packet, current_capacity_kbps, now_receiver_ms_);
+    [arrival_packet last_send_time_ms_] = ArrivalPackets (
+      new_packet, current_capacity_kbps, last_send_time_ms_, now_receiver_ms_);
 
     % Packets can be lost.
     if (size(arrival_packet, 2) > 0)
@@ -82,7 +86,8 @@ function RunNadaFilter (num_packets)
         delta_ms = now_receiver_ms_ - feedbacks_(1,end);
         derivative = (congestion_signal_ms - feedbacks_(2,end)) / delta_ms;
         % AcceleratedRampUp
-        if (loss_ratio == 0 && est_queuing_delay_ms < kQueuingDelayUpperBoundMs && derivative < kDerivativeUpperBound)
+        if (loss_ratio == 0 && est_queuing_delay_ms < kQueuingDelayUpperBoundMs 
+                            && derivative < kDerivativeUpperBound)
           kMaxRampUpQueuingDelayMs = 50;  % Referred as T_th.
           kGamma0 = 0.5;                  % Referred as gamma_0.
           kGamma = min(kGamma0, kMaxRampUpQueuingDelayMs/(baseline_delay_ms_ + kFeedbackIntervalMs));
@@ -104,7 +109,8 @@ function RunNadaFilter (num_packets)
         feedbacks_ = [feedbacks_ feedback];
       endif
 
-      plot_value = [bitrate_kbps_; delay_signal; median_filtered; exp_smoothed; est_queuing_delay_ms; loss_ratio; congestion_signal_ms; now_receiver_ms_];
+      plot_value = [bitrate_kbps_; delay_signal; median_filtered; exp_smoothed; 
+                    est_queuing_delay_ms; loss_ratio; congestion_signal_ms; now_receiver_ms_];
       plot_values = [plot_values plot_value];
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     endif
@@ -160,4 +166,4 @@ function RunNadaFilter (num_packets)
   set (legend3, 'fontsize', 12);
 
 endfunction
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
