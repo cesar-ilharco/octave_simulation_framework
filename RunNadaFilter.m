@@ -23,7 +23,7 @@ function RunNadaFilter (num_packets)
   time_compression = 1;  % Optional.
   kCapacitiesKbps (:,1) = kCapacitiesKbps (:,1)./time_compression;
   % Link capacity can be reduced to test a stressed scenario.
-  reducing_factor = 5;  % Optional.
+  reducing_factor = 1;  % Optional.
   kCapacitiesKbps (:,2) = kCapacitiesKbps (:,2)./reducing_factor;
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % Members, initial value.
@@ -117,10 +117,6 @@ function RunNadaFilter (num_packets)
             increase_kbps = kKappa*delta_ms*(kTheta - x_hat*(bitrate_kbps_ - kMinBitrateKbps)) / (kTauOMs^2);
             bitrate_kbps_ = bitrate_kbps_ + increase_kbps;
           endif
-          % Bitrate should be kept between [kMin, kMax].
-          bitrate_kbps_ = max(kMinBitrateKbps, min(kMaxBitrateKbps, bitrate_kbps_));
-          feedback = [now_receiver_ms_; congestion_signal_ms];
-          feedbacks_ = [feedbacks_ feedback];
 
         else  % Modified NADA.
           % Modified algorithm takes into account possible extra travel time for a packet.
@@ -132,7 +128,7 @@ function RunNadaFilter (num_packets)
           min_est_travel_time_ms_ = min(min_est_travel_time_ms_, est_travel_time_ms);
           extra_delay_ms_ = est_travel_time_ms - min_est_travel_time_ms_;
           % Stricter AcceleratedRampUp.
-          if (loss_ratio == 0 && (exp_smoothed < extra_delay_ms_ - kQueuingDelayUpperBoundMs || exp_smoothed < kQueuingDelayUpperBoundMs/5) && 
+          if (loss_ratio == 0 && (exp_smoothed < extra_delay_ms_ - kQueuingDelayUpperBoundMs || exp_smoothed < kQueuingDelayUpperBoundMs/3) && 
               derivative < kDerivativeUpperBound && receiving_rate > kMinBitrateKbps)
             kMaxRampUpQueuingDelayMs = 50;  % Referred as T_th.
             kGamma0 = 0.5;                  % Referred as gamma_0.
@@ -142,28 +138,29 @@ function RunNadaFilter (num_packets)
           elseif (congestion_signal_ms > kMaxCongestionSignalMs 
                   || exp_smoothed > kMaxCongestionSignalMs)
             kGamma0 = 0.9;
-            my_gamma = 5.0 * kMaxCongestionSignalMs / (congestion_signal_ms + exp_smoothed);
+            my_gamma = 2.0 * kMaxCongestionSignalMs / (congestion_signal_ms + exp_smoothed);
             my_gamma = min(my_gamma, kGamma0);
             bitrate_kbps_ = my_gamma * receiving_rate;
           % Smoothed GradualRateUpdate.
           else   
-            bitrate_reference = 2.0*bitrate_kbps_/(kMaxBitrateKbps+kMinBitrateKbps);
-            smoothing_factor = bitrate_reference ^ 0.75;
+            bitrate_reference = 3*(bitrate_kbps_- kMinBitrateKbps)/(kMaxBitrateKbps - kMinBitrateKbps);
+            smoothing_factor = min(bitrate_reference ^ 2.0, 1.0);
             kTauOMs = 500.0;           % Referred as tau_o.
             kEta = 2.0;                % Referred as eta.
             kKappa = 1.0;              % Referred as kappa.
             kReferenceDelayMs = 10.0;  % Referred as x_ref.
             kPriorityWeight = 1.0;     % Referred as w.
-            x_hat = congestion_signal_ms + kEta*kTauOMs*derivative;
+            new_congestion_signal_ms = max(0, congestion_signal_ms - extra_delay_ms_);
+            x_hat = new_congestion_signal_ms + kEta*kTauOMs*derivative;
             kTheta = kPriorityWeight * (kMaxBitrateKbps - kMinBitrateKbps) * kReferenceDelayMs;
             increase_kbps = kKappa*delta_ms*(kTheta - x_hat*(bitrate_kbps_ - kMinBitrateKbps)) / (kTauOMs^2);
             bitrate_kbps_ = bitrate_kbps_ + increase_kbps * smoothing_factor;
           endif
-          % Bitrate should be kept between [kMin, kMax].
-          bitrate_kbps_ = max(kMinBitrateKbps, min(kMaxBitrateKbps, bitrate_kbps_));
-          feedback = [now_receiver_ms_; congestion_signal_ms];
-          feedbacks_ = [feedbacks_ feedback];
         endif
+        % Bitrate should be kept between [kMin, kMax].
+        bitrate_kbps_ = max(kMinBitrateKbps, min(kMaxBitrateKbps, bitrate_kbps_));
+        feedback = [now_receiver_ms_; congestion_signal_ms];
+        feedbacks_ = [feedbacks_ feedback];
       endif
 
       plot_value = [bitrate_kbps_; delay_signal; median_filtered; exp_smoothed; 
