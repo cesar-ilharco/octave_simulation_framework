@@ -23,7 +23,7 @@ https://tools.ietf.org/html/draft-ietf-rmcat-eval-test-01#section-5.1
 
 Adjust/tune parameters according to your needs.
 
-IN PROGRESS (Check working_branch)
+IN PROGRESS
 
 Since jitter is always positive, using a min filter instead of a median filter can be a good alternative to measure how much of the delay isn't due to jitter.
 Travel time depends on the link capacity. A 1200 bytes packet will naturally have a 15ms higher delay over a 500kbps than over a 2500kbps network. This can affect NADA's performance if the capacity drops: the baseline_delay won't be updated. One solution can be update it over a previous time window. Another one can be estimate the current send time.
