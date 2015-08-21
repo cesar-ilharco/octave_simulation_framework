@@ -23,6 +23,12 @@ https://tools.ietf.org/html/draft-ietf-rmcat-eval-test-01#section-5.1
 
 Adjust/tune parameters according to your needs.
 
+IN PROGRESS (Check working_branch)
+Since jitter is always positive, using a min filter instead of a median filter can be a good alternative to measure how much of the delay isn't due to jitter.
+The modifications to NADA algorithm that were implemented on:
+https://chromium.googlesource.com/external/webrtc/+/master/webrtc/modules/remote_bitrate_estimator/test/estimators/nada.cc
+were also implemented in this repository. 
+
 TODO:
 Implement GCC congestion control algorithm on this framework.
 Test other filters/classifiers as alternatives to Kalman filter.
