@@ -4,12 +4,12 @@ function RunNadaFilter (num_packets)
   % Constants.
   kPacketLossPenaltyMs = 1000;
   kPayloadSizeBytes = 1200;
-  kMinBitrateKbps = 50;
-  kMaxBitrateKbps = 2500;
+  kMinBitrateKbps = 150;
+  kMaxBitrateKbps = 1500;
   kFeedbackIntervalMs = 100;
   kQueuingDelayUpperBoundMs = 10;
   kDerivativeUpperBound = 10 / kFeedbackIntervalMs;
-  kOriginalMode = false;
+  kOriginalMode = true;
   kQueuingDelayUpperBoundMs = 10;
   kProportionalityDelayBits = 20;
   kMaxCongestionSignalMs = 50;
@@ -17,7 +17,7 @@ function RunNadaFilter (num_packets)
   % Testbed parameters: evaluation test 5.1 available on:
   % https://tools.ietf.org/html/draft-ietf-rmcat-eval-test-01#section-5.1
   % Maps [ending_time(s) capacity(kbps)]
-  kCapacitiesKbps = [25 4000; 50 2000; 75 3500; 100 1000; 125 2000];
+  kCapacitiesKbps = [30 1500];% 50 2000; 75 3500; 100 1000; 125 2000];
   % Simulation can be shorten in order to obtain results more quickly.
   % Convergence should take place before link capacity changes.
   time_compression = 1;  % Optional.
@@ -76,7 +76,7 @@ function RunNadaFilter (num_packets)
       if (kOriginalMode)
         median_filtered = MedianFilter ([plot_values_(2,max(1,end-3):end) delay_signal])(end);
       else 
-        median_filtered = min ([plot_values_(2,max(1,end-8):end) delay_signal]);
+        median_filtered = min ([plot_values_(2,max(1,end-48):end) delay_signal]);
       endif
       exp_smoothed = ExpSmoothingFilter([plot_values_(4,end) median_filtered])(2);
       est_queuing_delay_ms = NonLinearWarping(exp_smoothed);
@@ -207,7 +207,11 @@ function RunNadaFilter (num_packets)
   title('Delay Signals', 'fontsize', 14);
   xlabel('time (s)', 'fontsize', 12);
   ylabel('signal (ms)', 'fontsize', 12);
-  legend2 = legend ('Raw delay signal', 'Median filtered', 'Exp. smoothed');
+  if (kOriginalMode)
+    legend2 = legend ('Raw delay signal', 'Median filtered', 'Exp. smoothed');
+  else
+    legend2 = legend ('Raw delay signal', 'Min filtered', 'Exp. smoothed');
+  endif
   set (legend2, 'fontsize', 12);
 
   %%%%%%%% PLOT est_queuing_delay, loss_signal and congestion_signal. %%%%%%%%
@@ -221,6 +225,10 @@ function RunNadaFilter (num_packets)
   ylabel('signal (ms)', 'fontsize', 12);
   legend3 = legend ('Est. queuing delay', 'Loss signal', 'Congestion signal');
   set (legend3, 'fontsize', 12);
+
+  %%%%%%%% PRINT Average Bitrate (time weighted) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  average_bitrate = TimeWeightedAverage(plot_values_, 1)
 
 endfunction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
