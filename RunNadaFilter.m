@@ -9,7 +9,7 @@ function RunNadaFilter (num_packets)
   kFeedbackIntervalMs = 100;
   kQueuingDelayUpperBoundMs = 10;
   kDerivativeUpperBound = 10 / kFeedbackIntervalMs;
-  kOriginalMode = true;
+  kOriginalMode = false;
   kQueuingDelayUpperBoundMs = 10;
   kProportionalityDelayBits = 20;
   kMaxCongestionSignalMs = 50;
@@ -226,9 +226,15 @@ function RunNadaFilter (num_packets)
   legend3 = legend ('Est. queuing delay', 'Loss signal', 'Congestion signal');
   set (legend3, 'fontsize', 12);
 
-  %%%%%%%% PRINT Average Bitrate (time weighted) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%%%%%% PRINT Average Metrics (time weighted) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-  average_bitrate = TimeWeightedAverage(plot_values_, 1)
+  average_bitrate_kbps = TimeWeightedAverage(plot_values_, 1)
+  average_delay_ms = TimeWeightedAverage(plot_values_, 2)
+
+  %%%%%%%% PRINT Global Packet Loss %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  % Sequence numbers are sequential, starting at one. Overflow won't happen for short simulations.
+
+  global_packet_loss = 1.0 - size(plot_values_,2)/packet_id_
 
 endfunction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

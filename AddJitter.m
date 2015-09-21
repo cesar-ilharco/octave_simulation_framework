@@ -5,7 +5,8 @@ function jittered_packets = AddJitter (packets, last_send_time_ms)
   % High jitter.
   kMaxJitterMs = 60;
   kSigmaMs = 20;
-  kDefaultValues = false;
+
+  kDefaultValues = false; % True for gentle jitter.
 
   if (kDefaultValues)
 	  kMaxJitterMs = 30;
