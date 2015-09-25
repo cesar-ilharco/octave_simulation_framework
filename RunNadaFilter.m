@@ -9,7 +9,8 @@ function RunNadaFilter (num_packets)
   kFeedbackIntervalMs = 100;
   kQueuingDelayUpperBoundMs = 10;
   kDerivativeUpperBound = 10 / kFeedbackIntervalMs;
-  kOriginalMode = false;
+  kOriginalMode = true;
+  kUsingMedianFilter = true;
   kQueuingDelayUpperBoundMs = 10;
   kProportionalityDelayBits = 20;
   kMaxCongestionSignalMs = 50;
@@ -17,7 +18,8 @@ function RunNadaFilter (num_packets)
   % Testbed parameters: evaluation test 5.1 available on:
   % https://tools.ietf.org/html/draft-ietf-rmcat-eval-test-01#section-5.1
   % Maps [ending_time(s) capacity(kbps)]
-  kCapacitiesKbps = [30 1500];% 50 2000; 75 3500; 100 1000; 125 2000];
+  % kCapacitiesKbps = [30 1500; 50 2000; 75 3500; 100 1000; 125 2000];
+  kCapacitiesKbps = [60 1500];
   % Simulation can be shorten in order to obtain results more quickly.
   % Convergence should take place before link capacity changes.
   time_compression = 1;  % Optional.
@@ -73,7 +75,7 @@ function RunNadaFilter (num_packets)
       delay = arrival_packet(1,1) - new_packet(1,1);
       baseline_delay_ms_ = min (baseline_delay_ms_, delay);
       delay_signal = delay - baseline_delay_ms_;
-      if (kOriginalMode)
+      if (kUsingMedianFilter)
         median_filtered = MedianFilter ([plot_values_(2,max(1,end-3):end) delay_signal])(end);
       else 
         median_filtered = min ([plot_values_(2,max(1,end-48):end) delay_signal]);
