@@ -1,4 +1,5 @@
 # octave_simulation_framework
+Using GNU Octave, version 3.6.1
 
 OBJECTIVES:
 The repository aims to provide an octave simulation framework that is easy to read, run and modify. Results visualization helps to get a better understanding on how congestion control algorithms GCC and NADA work. Furthermore, new filters and other algorithm modifications can be tested.
